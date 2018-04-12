@@ -11,7 +11,7 @@ public class ValidatePresenceTest {
     @ValidatePresence
     String field;
 
-    @ValidatePresence
+    @ValidatePresence(allowEmpty = true)
     String otherField = "value";
 
   }
@@ -19,8 +19,9 @@ public class ValidatePresenceTest {
   private ValidationEngine engine = new ValidationEngine();
 
   @Test
-  public void validatesPresenceOfStrings() {
+  public void doesNotAllowEmptyStringsByDefault() {
     Bean bean = new Bean();
+    bean.field = "  ";
 
     ValidationErrors errors = engine.validate(bean);
 
@@ -28,30 +29,15 @@ public class ValidatePresenceTest {
   }
 
   @Test
-  public void savesPresenceErrorMessage() {
-    Bean bean = new Bean();
-
-    ValidationErrors errors = engine.validate(bean);
-
-    assertThat(errors.getErrors("field")).containsExactly("can't be blank");
-  }
-
-  @Test
-  public void doesNotReturnErrorsForValidFields() {
-    Bean bean = new Bean();
-
-    ValidationErrors errors = engine.validate(bean);
-
-    assertThat(errors.getErrors("otherField")).isEmpty();
-  }
-
-  @Test
-  public void doesNotReturnAnyErrorsWhenObjectValid() {
+  public void canAllowEmptyStrings() {
     Bean bean = new Bean();
     bean.field = "value";
+    bean.otherField = "   ";
 
     ValidationErrors errors = engine.validate(bean);
 
-    assertThat(errors.isValid()).isTrue();
+    assertThat(errors.isInvalid()).isFalse();
   }
+
+
 }
