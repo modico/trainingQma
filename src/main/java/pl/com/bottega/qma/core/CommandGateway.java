@@ -19,38 +19,18 @@ public class CommandGateway {
   }
 
   public <ReturnT> ReturnT execute(Command command) {
-    Handler handler = handlerFor(command);
-    securityManager.checkSecurity(command, handler);
-    Profiler profiler = new Profiler(command, handler);
-    commandLogger.executionStarted(command);
-    ReturnT returnValue;
-    if (handler instanceof TxHandler) {
-      returnValue = executeInTx(command, (TxHandler) handler);
-    } else {
-      returnValue = (ReturnT) handler.handle(command);
-    }
-    commandLogger.executionFinished(command);
-    profiler.finished();
-    return returnValue;
-  }
-
-  private <ReturnT> ReturnT executeInTx(Command command, TxHandler handler) {
-    handler.preTx(command);
-    ReturnT value;
-    try {
-      txManager.begin();
-      value = (ReturnT) handler.handle(command);
-      txManager.commit();
-    } catch (RuntimeException re) {
-      txManager.rollback();
-      throw re;
-    }
-    handler.postTx(command);
-    return value;
+    Handler<Command, ReturnT> handler = handlerFor(command);
+    return handler.handle(command);
   }
 
   public <CommandT extends Command> void registerHandler(Class<CommandT> commandClass, Handler<CommandT, ?> handler) {
-    handlersMap.put(commandClass, handler);
+    Handler<CommandT, ?> decoratedHandler = new ProfilingHandler<>(handler);
+    decoratedHandler = new LoggingHandler<>(decoratedHandler, commandLogger);
+    if(handler instanceof TxHandler) {
+      decoratedHandler = new TransactionalHandler<>((TxHandler) handler, decoratedHandler, txManager);
+    }
+    decoratedHandler = new SecureHandler(decoratedHandler, handler, securityManager);
+    handlersMap.put(commandClass, decoratedHandler);
   }
 
   private Handler handlerFor(Command command) {
