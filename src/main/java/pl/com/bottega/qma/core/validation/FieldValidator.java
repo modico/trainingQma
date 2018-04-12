@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
-abstract class FieldValidator<ValueT> implements Validator<ValueT> {
+public abstract class FieldValidator<ValueT> implements Validator<ValueT> {
 
   private final Field field;
 
@@ -15,6 +15,7 @@ abstract class FieldValidator<ValueT> implements Validator<ValueT> {
   @Override
   public void validate(ValueT toValidate, ValidationErrors errors) {
     try {
+      field.setAccessible(true);
       ValueT value = (ValueT) field.get(toValidate);
       validateValue(value, errors);
     } catch (IllegalAccessException e) {
@@ -38,8 +39,8 @@ abstract class FieldValidator<ValueT> implements Validator<ValueT> {
     });
   }
 
-  private Optional<Method> sizeMethod() {
-    Class fieldClass = field.getDeclaringClass();
+  protected Optional<Method> sizeMethod() {
+    Class fieldClass = field.getType();
     try {
       Method size = fieldClass.getMethod("size");
       return Optional.of(size);
@@ -48,7 +49,7 @@ abstract class FieldValidator<ValueT> implements Validator<ValueT> {
 
     try {
       Method length = fieldClass.getMethod("length");
-      Optional.of(length);
+      return Optional.of(length);
     } catch (NoSuchMethodException e) {
     }
 

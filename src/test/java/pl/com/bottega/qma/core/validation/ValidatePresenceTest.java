@@ -21,7 +21,7 @@ public class ValidatePresenceTest {
   @Test
   public void doesNotAllowEmptyStringsByDefault() {
     Bean bean = new Bean();
-    bean.field = "  ";
+    bean.field = "";
 
     ValidationErrors errors = engine.validate(bean);
 

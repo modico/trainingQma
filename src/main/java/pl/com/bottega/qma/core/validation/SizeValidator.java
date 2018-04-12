@@ -1,13 +1,16 @@
 package pl.com.bottega.qma.core.validation;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Optional;
 
-class SizeValidator extends FieldValidator {
+public class SizeValidator extends FieldValidator {
   private final ValidateSize config;
 
   public SizeValidator(Field field, ValidateSize config) {
     super(field);
+    Optional<Method> sizeMethod = sizeMethod();
+    sizeMethod.orElseThrow(() -> new IllegalArgumentException(String.format("Can't read size of %s", field.getType())));
     this.config = config;
   }
 
@@ -22,7 +25,6 @@ class SizeValidator extends FieldValidator {
         addError(errors);
       }
     });
-    size.orElseThrow(() -> new IllegalArgumentException(String.format("Can't read size of %s", value.getClass())));
   }
 
   private void addError(ValidationErrors errors) {

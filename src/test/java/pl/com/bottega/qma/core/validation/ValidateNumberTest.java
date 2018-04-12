@@ -15,6 +15,7 @@ public class ValidateNumberTest {
     int n1 = 100;
 
     @ValidatePresence
+    @ValidateNumber(min = 0, max = 15)
     Long n2 = 15L;
 
     @ValidatePresence
@@ -58,7 +59,7 @@ public class ValidateNumberTest {
     ValidationErrors errors = engine.validate(bean);
 
     assertThat(errors.isInvalid()).isTrue();
-    assertThat(errors.getErrors("n2")).containsExactly("must be between 10 and 100");
+    assertThat(errors.getErrors("n2")).containsExactly("must be between 0 and 15");
   }
 
   @Test
