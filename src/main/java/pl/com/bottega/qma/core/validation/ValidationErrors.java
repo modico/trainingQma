@@ -6,7 +6,7 @@ public class ValidationErrors {
 
   private final Map<String, List<String>> errors = new HashMap<>();
 
-  public void addError(String field, String errorMessage) {
+  void addError(String field, String errorMessage) {
     if (errors.containsKey(field)) {
       errors.get(field).add(errorMessage);
     } else {
