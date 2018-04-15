@@ -28,7 +28,7 @@ public class Document {
 
   public void edit(EditDocumentCommand editDocumentCommand) {
     checkState(status == DocumentStatus.DRAFT || status == DocumentStatus.VERIFIED,
-        "only draft and verified documents can be modified");
+        "only draft and verified documents can be edited");
     status = DocumentStatus.DRAFT;
     editDocumentCommand.title.ifPresent(title -> this.title = title);
     editDocumentCommand.content.ifPresent(content -> this.content = content);
@@ -46,7 +46,7 @@ public class Document {
 
   public void publish(PublishDocumentCommand publishDocumentCommand) {
     checkState(status == DocumentStatus.VERIFIED || status == DocumentStatus.PUBLISHED,
-        "only verified or published documents can be published");
+        "only verified and published documents can be published");
     status = DocumentStatus.PUBLISHED;
     publisherId = publishDocumentCommand.publisherId;
     publishedForDepartments.addAll(publishDocumentCommand.departmentCodes);

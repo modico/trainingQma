@@ -116,7 +116,7 @@ public class DocumentTest {
 
     assertThatThrownBy(() -> publishDocument(document)).
         isInstanceOf(IllegalStateException.class).
-        hasMessage("only verified or published documents can be published");
+        hasMessage("only verified and published documents can be published");
   }
 
   @Test
@@ -125,7 +125,7 @@ public class DocumentTest {
 
     assertThatThrownBy(() -> editDocument(document, Optional.of("other"), Optional.empty())).
         isInstanceOf(IllegalStateException.class).
-        hasMessage("only draft and verified documents can be modified");
+        hasMessage("only draft and verified documents can be edited");
   }
 
   @Test
