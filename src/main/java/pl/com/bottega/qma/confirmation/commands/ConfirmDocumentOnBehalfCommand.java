@@ -6,6 +6,6 @@ public class ConfirmDocumentOnBehalfCommand implements Command {
 
   public String documentNumber;
   public Long confirmerId;
-  public Long targetEmployeeId;
+  public Long managerId;
 
 }
