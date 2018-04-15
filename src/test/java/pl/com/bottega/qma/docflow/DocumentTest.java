@@ -19,6 +19,7 @@ public class DocumentTest {
   private final String newContent = "new content";
   private final Long uberManagerId = 3L;
   private Collection<String> departments = List.of("DEP1", "DEP2", "DEP3");
+  private Collection<String> otherDepartments  = List.of("DEP4", "DEP5");
 
   @Test
   public void createsDocument() {
@@ -71,6 +72,16 @@ public class DocumentTest {
   }
 
   @Test
+  public void pusblishesDocumentForMoreDepartments() {
+    Document document = publishedDocument();
+
+    publishDocument(document, otherDepartments);
+
+    assertThat(document.publishedFor()).containsAll(otherDepartments);
+    assertThat(document.publishedFor()).containsAll(departments);
+  }
+
+  @Test
   public void documentCreatorCantVerifyIt() {
     var document = draftDocument();
     editDocument(document, Optional.of(newTitle), Optional.of(newContent));
@@ -105,7 +116,7 @@ public class DocumentTest {
 
     assertThatThrownBy(() -> publishDocument(document)).
         isInstanceOf(IllegalStateException.class).
-        hasMessage("only verified documents can be published");
+        hasMessage("only verified or published documents can be published");
   }
 
   @Test
@@ -172,6 +183,10 @@ public class DocumentTest {
   }
 
   private void publishDocument(Document document) {
+    publishDocument(document, departments);
+  }
+
+  private void publishDocument(Document document, Collection<String> departments) {
     var publishDocumentCommand = new PublishDocumentCommand();
     publishDocumentCommand.publisherId = uberManagerId;
     publishDocumentCommand.documentNumber = document.number();

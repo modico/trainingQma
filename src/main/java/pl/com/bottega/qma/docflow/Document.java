@@ -45,11 +45,11 @@ public class Document {
   }
 
   public void publish(PublishDocumentCommand publishDocumentCommand) {
-    checkState(status == DocumentStatus.VERIFIED,
-        "only verified documents can be published");
+    checkState(status == DocumentStatus.VERIFIED || status == DocumentStatus.PUBLISHED,
+        "only verified or published documents can be published");
     status = DocumentStatus.PUBLISHED;
     publisherId = publishDocumentCommand.publisherId;
-    publishedForDepartments = new HashSet<>(publishDocumentCommand.departmentCodes);
+    publishedForDepartments.addAll(publishDocumentCommand.departmentCodes);
   }
 
   public void archive(ArchiveDocumentCommand archiveDocumentCommand) {
