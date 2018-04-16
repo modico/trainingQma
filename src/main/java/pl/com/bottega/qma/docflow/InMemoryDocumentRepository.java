@@ -9,6 +9,9 @@ public class InMemoryDocumentRepository implements DocumentRepository {
 
   @Override
   public Document get(String number) {
+    if (!db.containsKey(number)) {
+      throw new DocumentNotFoundException(number);
+    }
     return db.get(number);
   }
 

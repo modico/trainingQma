@@ -28,9 +28,15 @@ public class Document {
 
   public void verify(VerifyDocumentCommand verifyDocumentCommand) {
     status().checkOperationPermited(DocumentVerified.class);
-    checkArgument(!creatorId().equals(verifyDocumentCommand.verifierId), "document creator can't verify it");
-    checkArgument(!editorId().equals(verifyDocumentCommand.verifierId), "document editor can't verify it");
+    checkDocumentOperationt(!creatorId().equals(verifyDocumentCommand.verifierId), "document creator can't verify it");
+    checkDocumentOperationt(!editorId().equals(verifyDocumentCommand.verifierId), "document editor can't verify it");
     events.add(new DocumentVerified(number(), verifyDocumentCommand.verifierId, LocalDateTime.now()));
+  }
+
+  private void checkDocumentOperationt(boolean condition, String errorMsg) {
+    if (!condition) {
+      throw new IllegalDocumentOperation(errorMsg);
+    }
   }
 
   public void publish(PublishDocumentCommand publishDocumentCommand) {

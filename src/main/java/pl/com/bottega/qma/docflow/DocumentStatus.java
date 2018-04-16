@@ -26,7 +26,7 @@ public enum DocumentStatus {
     if(possibleEvents.contains(eventT)) {
       return;
     }
-    throw new IllegalStateException(String.format("only %s documents can be %s", allowedStates(eventT), operationName(eventT)));
+    throw new IllegalDocumentOperation(String.format("only %s documents can be %s", allowedStates(eventT), operationName(eventT)));
   }
 
   private <EventT extends DocumentEvent> String allowedStates(Class<EventT> eventT) {
