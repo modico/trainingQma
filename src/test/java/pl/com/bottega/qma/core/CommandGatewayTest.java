@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import pl.com.bottega.qma.core.validation.ValidationEngine;
+import pl.com.bottega.qma.core.validation.ValidationErrors;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -23,6 +25,9 @@ public class CommandGatewayTest {
   @Mock
   private CommandGateway gateway;
 
+  @Mock
+  private ValidationEngine validationEngine;
+
   private TestHandler handler = new TestHandler();
 
   private TestTxHandler txHandler = new TestTxHandler();
@@ -32,7 +37,8 @@ public class CommandGatewayTest {
   @BeforeEach
   public void setup() {
     MockitoAnnotations.initMocks(this);
-    gateway = new CommandGateway(commandLogger, securityManager, txManager);
+    when(validationEngine.validate(command)).thenReturn(new ValidationErrors());
+    gateway = new CommandGateway(commandLogger, securityManager, txManager, validationEngine);
   }
 
   @Test
@@ -87,6 +93,22 @@ public class CommandGatewayTest {
     verify(txManager, times(1)).begin();
     verify(txManager, times(0)).commit();
     verify(txManager, times(1)).rollback();
+  }
+
+  @Test
+  public void validatesCommands() {
+    registerAndExecute();
+
+    verify(validationEngine).validate(command);
+  }
+
+  @Test
+  public void stopsExecutionWhenCommandIsInvalid() {
+    var errors = mock(ValidationErrors.class);
+    when(errors.isInvalid()).thenReturn(true);
+    when(validationEngine.validate(command)).thenReturn(errors);
+
+    assertThatThrownBy(() -> registerAndExecute()).isInstanceOf(IllegalArgumentException.class);
   }
 
   private void registerAndExecute() {
