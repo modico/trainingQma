@@ -1,8 +1,8 @@
 package pl.com.bottega.qma.core.events;
 
-public class DefaultEventEngine implements EventEngine {
+public class DefaultEventEngine implements EventSubscriber, EventPublisher {
   @Override
-  public <EventT> void addListener(Class<EventT> eventClass, EventListener<EventT> listener) {
+  public <EventT> void subscribe(Class<EventT> eventClass, EventListener<EventT> listener) {
 
   }
 
