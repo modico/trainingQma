@@ -1,7 +1,7 @@
 package pl.com.bottega.qma.notifications;
 
 import pl.com.bottega.qma.core.events.EventSubscriber;
-import pl.com.bottega.qma.core.events.EventSubscriber.EventListener;
+import pl.com.bottega.qma.core.events.EventListener;
 import pl.com.bottega.qma.docflow.events.DocumentPublished;
 
 public class DocumentPublishedListener implements EventListener<DocumentPublished> {
