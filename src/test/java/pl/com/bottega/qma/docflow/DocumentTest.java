@@ -1,7 +1,13 @@
 package pl.com.bottega.qma.docflow;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import pl.com.bottega.qma.core.events.EventPublisher;
 import pl.com.bottega.qma.docflow.commands.*;
+import pl.com.bottega.qma.docflow.events.DocumentPublished;
 
 import java.util.Collection;
 import java.util.List;
@@ -9,6 +15,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
 public class DocumentTest {
 
@@ -20,6 +28,14 @@ public class DocumentTest {
   private final Long uberManagerId = 3L;
   private Collection<String> departments = List.of("DEP1", "DEP2", "DEP3");
   private Collection<String> otherDepartments  = List.of("DEP4", "DEP5");
+
+  @Mock
+  private EventPublisher eventPublisher;
+
+  @BeforeEach
+  public void init() {
+    MockitoAnnotations.initMocks(this);
+  }
 
   @Test
   public void createsDocument() {
@@ -87,7 +103,7 @@ public class DocumentTest {
     editDocument(document, Optional.of(newTitle), Optional.of(newContent));
 
     assertThatThrownBy(() -> verifyDocument(document, employeeId)).
-        isInstanceOf(IllegalArgumentException.class).
+        isInstanceOf(IllegalDocumentOperation.class).
         hasMessage("document creator can't verify it");
   }
 
@@ -97,7 +113,7 @@ public class DocumentTest {
     editDocument(document, Optional.of(newTitle), Optional.of(newContent), managerId);
 
     assertThatThrownBy(() -> verifyDocument(document)).
-        isInstanceOf(IllegalArgumentException.class).
+        isInstanceOf(IllegalDocumentOperation.class).
         hasMessage("document editor can't verify it");
   }
 
@@ -115,7 +131,7 @@ public class DocumentTest {
     var document = draftDocument();
 
     assertThatThrownBy(() -> publishDocument(document)).
-        isInstanceOf(IllegalStateException.class).
+        isInstanceOf(IllegalDocumentOperation.class).
         hasMessage("only verified and published documents can be published");
   }
 
@@ -124,7 +140,7 @@ public class DocumentTest {
     Document document = publishedDocument();
 
     assertThatThrownBy(() -> editDocument(document, Optional.of("other"), Optional.empty())).
-        isInstanceOf(IllegalStateException.class).
+        isInstanceOf(IllegalDocumentOperation.class).
         hasMessage("only draft and verified documents can be edited");
   }
 
@@ -133,7 +149,7 @@ public class DocumentTest {
     Document document = publishedDocument();
 
     assertThatThrownBy(() -> verifyDocument(document)).
-        isInstanceOf(IllegalStateException.class).
+        isInstanceOf(IllegalDocumentOperation.class).
         hasMessage("only draft documents can be verified");
   }
 
@@ -151,11 +167,18 @@ public class DocumentTest {
     });
   }
 
+  @Test
+  public void notifiesAboutPublishedEvent() {
+    var doc = publishedDocument();
+    
+    verify(eventPublisher).publish(any(DocumentPublished.class));
+  }
+
   private Document draftDocument() {
     var cmd = new CreateDocumentCommand();
     cmd.creatorId = employeeId;
 
-    return new Document(number, cmd);
+    return new Document(number, cmd, eventPublisher);
   }
 
   private void editDocument(Document document, Optional<String> newTitle, Optional<String> newContent) {

@@ -1,5 +1,6 @@
 package pl.com.bottega.qma.docflow;
 
+import pl.com.bottega.qma.core.events.EventPublisher;
 import pl.com.bottega.qma.docflow.commands.*;
 import pl.com.bottega.qma.docflow.events.*;
 
@@ -15,8 +16,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class Document {
 
   private final List<DocumentEvent> events = new ArrayList<>();
+  private final EventPublisher eventPublisher;
 
-  public Document(String number, CreateDocumentCommand createDocumentCommand) {
+  public Document(String number, CreateDocumentCommand createDocumentCommand, EventPublisher eventPublisher) {
+    this.eventPublisher = eventPublisher;
     events.add(new DocumentCreated(number, createDocumentCommand.creatorId, LocalDateTime.now()));
   }
 
@@ -41,8 +44,10 @@ public class Document {
 
   public void publish(PublishDocumentCommand publishDocumentCommand) {
     status().checkOperationPermited(DocumentPublished.class);
-    events.add(new DocumentPublished(number(), publishDocumentCommand.publisherId, LocalDateTime.now(),
-        publishDocumentCommand.departmentCodes));
+    var event = new DocumentPublished(number(), publishDocumentCommand.publisherId, LocalDateTime.now(),
+        publishDocumentCommand.departmentCodes);
+    events.add(event);
+    eventPublisher.publish(event);
   }
 
   public void archive(ArchiveDocumentCommand archiveDocumentCommand) {
