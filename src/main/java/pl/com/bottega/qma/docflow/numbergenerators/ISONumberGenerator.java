@@ -8,7 +8,7 @@ public class ISONumberGenerator implements DocumentNumberGenerator {
   @Override
   public String generate() {
     LocalDateTime time = LocalDateTime.now();
-    return String.format("ISO/%d/%d/%s", time.getYear(), time.getMonth(), time.getDayOfMonth(),
+    return String.format("ISO/%d/%d/%s", time.getYear(), time.getMonthValue(), time.getDayOfMonth(),
         String.format("%x", (int) (Math.random() * 0xffffff)));
   }
 }
