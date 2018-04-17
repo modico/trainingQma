@@ -1,5 +1,7 @@
 package pl.com.bottega.qma.core;
 
+import pl.com.bottega.qma.core.validation.ValidationEngine;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,12 +12,14 @@ public class CommandGateway {
   private CommandLogger commandLogger;
   private SecurityManager securityManager;
   private TxManager txManager;
+  private ValidationEngine validationEngine;
 
   public CommandGateway(CommandLogger commandLogger, SecurityManager securityManager,
-                        TxManager txManager) {
+                        TxManager txManager, ValidationEngine validationEngine) {
     this.commandLogger = commandLogger;
     this.securityManager = securityManager;
     this.txManager = txManager;
+    this.validationEngine = validationEngine;
   }
 
   public <ReturnT> ReturnT execute(Command command) {
@@ -30,6 +34,7 @@ public class CommandGateway {
       decoratedHandler = new TransactionalHandler<>((TxHandler) handler, decoratedHandler, txManager);
     }
     decoratedHandler = new SecureHandler(decoratedHandler, handler, securityManager);
+    decoratedHandler = new ValidatingDecorator<>(decoratedHandler, validationEngine);
     handlersMap.put(commandClass, decoratedHandler);
   }
 
