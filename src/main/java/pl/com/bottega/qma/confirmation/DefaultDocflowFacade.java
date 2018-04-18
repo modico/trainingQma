@@ -2,6 +2,7 @@ package pl.com.bottega.qma.confirmation;
 
 import pl.com.bottega.qma.docflow.Document;
 import pl.com.bottega.qma.docflow.DocumentRepository;
+import pl.com.bottega.qma.docflow.DocumentStatus;
 import pl.com.bottega.qma.hr.HrFacade;
 
 import java.util.Set;
@@ -19,6 +20,9 @@ public class DefaultDocflowFacade implements DocflowFacade {
   @Override
   public boolean isPublishedFor(String documentNumber, Long employeeId) {
     Document document = documentRepository.get(documentNumber);
+    if(document.status() != DocumentStatus.PUBLISHED) {
+      return false;
+    }
     Set<String> departments = document.publishedFor();
     return hrFacade.belongsToAnyDepratment(departments, employeeId);
   }
